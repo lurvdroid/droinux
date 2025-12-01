@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Droinux - Advanced Penguin Runner</title>
+  <style>
+    body {
+      margin: 0;
+      background: #cfeeff;
+      font-family: Arial, sans-serif;
+      user-select: none;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: 40px;
+      color: #00334d;
+    }
+
+    #game {
+      width: 800px;
+      height: 250px;
+      background: #ffffff;
+      border: 3px solid #00334d;
+      margin: 20px auto;
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    /* Penguin Character */
+    #penguin {
+      width: 50px;
+      height: 50px;
+      position: absolute;
+      bottom: 0;
+      left: 70px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 25px 20px, white 15px, black 16px);
+      transition: bottom 0.1s linear;
+    }
+
+    /* Ice obstacle */
+    #ice {
+      width: 30px;
+      height: 60px;
+      background: #8fd3ff;
+      position: absolute;
+      bottom: 0;
+      right: -50px;
+      border-radius: 5px;
+      display: none;
+    }
+
+    /* Score Display */
+    #score {
+      font-size: 24px;
+      color: #00334d;
+      margin-top: 5px;
+    }
+
+    /* Start/Restart screen */
+    #start-screen {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 28px;
+      cursor: pointer;
+      z-index: 10;
+    }
+  </style>
+</head>
+
+<body>
+<h1>🐧 DROINUX — Advanced Edition</h1>
+<div id="score">Score: 0</div>
+
+<div id="game">
+  <div id="start-screen">Click to Start Droinux</div>
+  <div id="penguin"></div>
+  <div id="ice"></div>
+</div>
+
+<script>
+  const penguin = document.getElementById("penguin");
+  const ice = document.getElementById("ice");
+  const game = document.getElementById("game");
+  const startScreen = document.getElementById("start-screen");
+  const scoreDisplay = document.getElementById("score");
+
+  let jumping = false;
+  let gameRunning = false;
+  let score = 0;
+  let speed = 5;
+
+  /* Start Game */
+  function startGame() {
+    startScreen.style.display = "none";
+    ice.style.display = "block";
+    gameRunning = true;
+    score = 0;
+    speed = 5;
+    penguin.style.bottom = "0px";
+    moveIce();
+    updateScore();
+  }
+
+  /* Penguin Jump */
+  function jump() {
+    if (!gameRunning || jumping) return;
+
+    jumping = true;
+    let up = 0;
+
+    let jumpInterval = setInterval(() => {
+      if (up >= 90) {
+        clearInterval(jumpInterval);
+
+        let downInterval = setInterval(() => {
+          if (up <= 0) {
+            clearInterval(downInterval);
+            jumping = false;
+          }
+          up -= 5;
+          penguin.style.bottom = up + "px";
+        }, 20);
+      }
+
+      up += 5;
+      penguin.style.bottom = up + "px";
+    }, 20);
+  }
+
+  /* Move Ice */
+  function moveIce() {
+    let icePos = -50;
+    ice.style.right = icePos + "px";
+
+    let interval = setInterval(() => {
+      if (!gameRunning) {
+        clearInterval(interval);
+        return;
+      }
+
+      icePos += speed;
+      ice.style.right = icePos + "px";
+
+      if (icePos > 850) {
+        icePos = -50;
+        speed += 0.5;
+      }
+
+      checkCollision();
+
+    }, 20);
+  }
+
+  /* Collision Detection */
+  function checkCollision() {
+    let penguinBottom = parseInt(window.getComputedStyle(penguin).bottom);
+    let iceRight = parseInt(window.getComputedStyle(ice).right);
+
+    if (iceRight > 670 && iceRight < 730 && penguinBottom < 45) {
+      gameOver();
+    }
+  }
+
+  /* Score System */
+  function updateScore() {
+    let sInterval = setInterval(() => {
+      if (!gameRunning) {
+        clearInterval(sInterval);
+        return;
+      }
+      score++;
+      scoreDisplay.innerHTML = "Score: " + score;
+    }, 200);
+  }
+
+  /* Game Over */
+  function gameOver() {
+    gameRunning = false;
+    startScreen.innerHTML = "Droinux Over! Click to Restart";
+    startScreen.style.display = "flex";
+  }
+
+  /* Controls */
+  document.addEventListener("keydown", jump);
+  document.addEventListener("click", startGame);
+  document.addEventListener("touchstart", jump);
+
+</script>
+
+</body>
+</html>
